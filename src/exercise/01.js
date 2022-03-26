@@ -43,6 +43,7 @@ function Counter({initialCount = 0, step = 1}) {
  */
 
 
+/* 
 // Extra 2
 // In tutorial, it merges new state with the old one
 function countReducer(state, newState) {
@@ -57,6 +58,28 @@ function Counter({initialCount = 0, step = 1}) {
 
   const {count} = state
   const increment = () => setState({count: count + step})
+  return <button onClick={increment}>{count}</button>
+}
+ */
+
+
+// Extra 3
+// The syntax of return value in tutorial is useful
+function countReducer(state, action) {
+  return typeof action === 'function'
+    ? {...state, ...action(state)}
+    : {...state, ...action}
+}
+
+// Extra 3
+function Counter({initialCount = 0, step = 1}) {
+  const [state, setState] = React.useReducer(countReducer, {
+    count: initialCount,
+  })
+
+  const {count} = state
+  const increment = () =>
+    setState(currentState => ({count: currentState.count + step}))
   return <button onClick={increment}>{count}</button>
 }
 
