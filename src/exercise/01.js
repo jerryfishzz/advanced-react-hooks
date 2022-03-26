@@ -63,6 +63,7 @@ function Counter({initialCount = 0, step = 1}) {
  */
 
 
+/* 
 // Extra 3
 // The syntax of return value in tutorial is useful
 function countReducer(state, action) {
@@ -80,6 +81,35 @@ function Counter({initialCount = 0, step = 1}) {
   const {count} = state
   const increment = () =>
     setState(currentState => ({count: currentState.count + step}))
+  return <button onClick={increment}>{count}</button>
+}
+ */
+
+
+// Extra 4
+// The syntax of return value in tutorial is useful
+function countReducer(state, action) {
+  switch (action.type) {
+    case 'INCREMENT':
+      return {
+        ...state,
+        count: state.count + action.step
+      }
+    default:{
+      throw new Error(`Unsupported action type: ${action.type}`)
+    }
+  }
+}
+
+// Extra 4
+function Counter({initialCount = 0, step = 1}) {
+  const [state, dispatch] = React.useReducer(countReducer, {
+    count: initialCount,
+  })
+
+  const {count} = state
+  const increment = () => dispatch({type: 'INCREMENT', step})
+
   return <button onClick={increment}>{count}</button>
 }
 
