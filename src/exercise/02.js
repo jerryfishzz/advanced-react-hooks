@@ -122,6 +122,7 @@ function asyncReducer(state, action) {
 // }
 
 
+/* 
 // Exercise
 // Note, how to use initialState in tutorial as the following shows
 function useAsync(asyncCallback, initialState, dependencies) {
@@ -161,7 +162,7 @@ function useAsync(asyncCallback, initialState, dependencies) {
   return state
 }
 
-
+// Exercise
 function PokemonInfo({pokemonName}) {
   // 🐨 move all the code between the lines into a new useAsync function.
   // 💰 look below to see how the useAsync hook is supposed to be called
@@ -233,8 +234,69 @@ function PokemonInfo({pokemonName}) {
       throw new Error('This should be impossible')
   }
 }
+ */
 
 
+// Extra 1
+function useAsync(asyncCallback, initialState) {
+  const [state, dispatch] = React.useReducer(asyncReducer, {
+    status: 'idle',
+    data: null,
+    error: null,
+    ...initialState
+  })
+
+  React.useEffect(() => {
+    const promise = asyncCallback()
+
+    if (!promise) {
+      return
+    }
+
+    dispatch({type: 'pending'})
+  
+    promise.then(
+      data => {
+        dispatch({type: 'resolved', data})
+      },
+      error => {
+        dispatch({type: 'rejected', error})
+      },
+    )
+  }, [asyncCallback])
+
+  return state
+}
+
+// Extra 1
+function PokemonInfo({pokemonName}) {
+  const asyncCallback = React.useCallback(() => {
+    if (!pokemonName) {
+      return
+    }
+    return fetchPokemon(pokemonName)
+  }, [pokemonName])
+
+  const state = useAsync( 
+    asyncCallback,
+    { status: pokemonName ? 'pending' : 'idle' }
+  )
+
+  const {data: pokemon, status, error} = state
+
+  switch (status) {
+    case 'idle':
+      return <span>Submit a pokemon</span>
+    case 'pending':
+      return <PokemonInfoFallback name={pokemonName} />
+    case 'rejected':
+      throw error
+    case 'resolved':
+      return <PokemonDataView pokemon={pokemon} />
+    default:
+      throw new Error('This should be impossible')
+  }
+}
 
 
 function App() {
