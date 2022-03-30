@@ -301,8 +301,9 @@ function PokemonInfo({pokemonName}) {
  */
 
 
+/* 
 // Extra 2
-function useAsync(asyncCallback, initialState) {
+function useAsync(initialState) {
   const [state, dispatch] = React.useReducer(asyncReducer, {
     status: 'idle',
     data: null,
@@ -344,6 +345,87 @@ function PokemonInfo({pokemonName}) {
     // 💰 note the absence of `await` here. We're literally passing the promise
     // to `run` so `useAsync` can attach it's own `.then` handler on it to keep
     // track of the state of the promise.
+    const pokemonPromise = fetchPokemon(pokemonName)
+    run(pokemonPromise)
+  }, [pokemonName, run])
+
+  switch (status) {
+    case 'idle':
+      return <span>Submit a pokemon</span>
+    case 'pending':
+      return <PokemonInfoFallback name={pokemonName} />
+    case 'rejected':
+      throw error
+    case 'resolved':
+      return <PokemonDataView pokemon={pokemon} />
+    default:
+      throw new Error('This should be impossible')
+  }
+}
+ */
+
+
+// Extra 3
+function useSafeDispatch(dispatch) {
+  const mountedRef = React.useRef(false)
+
+  React.useEffect(() => {
+    // When mounted
+    mountedRef.current = true
+
+    // When unmounted
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
+
+  return React.useCallback((...args) => {
+    if (mountedRef.current) {
+      dispatch(...args)
+    }
+  }, [dispatch])
+}
+
+// Extra 3
+function useAsync(initialState) {
+  const [state, unsafeDispatch] = React.useReducer(asyncReducer, {
+    status: 'idle',
+    data: null,
+    error: null,
+    ...initialState
+  })
+
+  const dispatch = useSafeDispatch(unsafeDispatch)
+
+  const run = React.useCallback(promise => {
+    if (!promise) {
+      return
+    }
+
+    dispatch({type: 'pending'})
+  
+    promise.then(
+      data => {
+        dispatch({type: 'resolved', data})
+      },
+      error => {
+        dispatch({type: 'rejected', error})
+      },
+    )
+  }, [dispatch])
+  
+  return { ...state, run }
+}
+
+// Extra 3
+function PokemonInfo({pokemonName}) {
+  const {data: pokemon, status, error, run} = useAsync({ status: pokemonName ? 'pending' : 'idle' })
+
+  React.useEffect(() => {
+    if (!pokemonName) {
+      return
+    }
+    
     const pokemonPromise = fetchPokemon(pokemonName)
     run(pokemonPromise)
   }, [pokemonName, run])
