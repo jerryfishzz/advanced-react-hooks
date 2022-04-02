@@ -3,10 +3,49 @@
 
 import * as React from 'react'
 
+/* 
+// Exercise
 function useMedia(query, initialState = false) {
   const [state, setState] = React.useState(initialState)
   // 🐨 call React.useDebugValue here.
   // 💰 here's the formatted label I use: `\`${query}\` => ${state}`
+  React.useDebugValue(`${query} => ${state}`)
+
+  React.useEffect(() => {
+    let mounted = true
+    const mql = window.matchMedia(query)
+    function onChange() {
+      if (!mounted) {
+        return
+      }
+      setState(Boolean(mql.matches))
+    }
+
+    mql.addListener(onChange)
+    setState(mql.matches)
+
+    return () => {
+      mounted = false
+      mql.removeListener(onChange)
+    }
+  }, [query])
+
+  return state
+}
+ */
+
+
+// Extra 1
+// Note, the variable name of destructured function parameter
+// in the function defination must match with 
+// the destructured parameter when the function is invoked.
+const formatMediaDebugValue = ({query, state}) =>
+  `init: ${state}; query: ${query}`
+
+function useMedia(query, initialState = false) {
+  const [state, setState] = React.useState(initialState)
+  
+  React.useDebugValue({query, state}, formatMediaDebugValue)
 
   React.useEffect(() => {
     let mounted = true
